@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ספר המתכונים המשפחתי</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    
+    <div id="auth-section" class="card fade-in">
+        <h1 class="elegant-title">ברוכים הבאים לספר המתכונים המשפחתי <span class="emoji">✨</span></h1>
+        <div class="input-group">
+            <span class="input-icon">👤</span>
+            <input type="text" id="username" placeholder="הזינו שם המשפחה שלכם">
+        </div>
+        <div class="auth-buttons">
+            <button onclick="login()" class="btn-primary animate-btn">התחבר והתחל לבשל! <span class="emoji">🍳</span></button>
+        </div>
+    </div>
+
+    <div id="recipe-list-screen" style="display:none;" class="fade-in">
+        <header class="elegant-header">
+            <h1 class="elegant-title">המתכונים של <span id="display-user"></span> <span class="emoji">📚</span></h1>
+            <div class="header-buttons">
+                <button onclick="showAddRecipeScreen()" class="btn-add animate-btn">+ הוסף מתכון לספר המשפחתי! <span class="emoji">💎</span></button>
+                <button onclick="location.reload()" class="btn-logout animate-btn">יציאה <span class="emoji">🚪</span></button>
+            </div>
+        </header>
+        
+        <div class="search-section card slide-in">
+            <span class="input-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="מצא מתכון לפי שם..." oninput="filterRecipes()">
+        </div>
+
+        <div id="recipes-list"></div>
+    </div>
+
+    <div id="add-recipe-screen" style="display:none;" class="card fade-in">
+        <button onclick="showListScreen()" class="btn-back animate-btn">→ חזרה לרשימה <span class="emoji">🌟</span></button>
+        <h3 class="elegant-title add-edit-title">הוספת מתכון חדש <span class="emoji">📝</span></h3>
+        <div class="input-group">
+            <span class="input-icon">🍽️</span>
+            <input type="text" id="recipe-title" placeholder="שם המתכון">
+        </div>
+        <div class="input-group">
+            <span class="input-icon">🌿</span>
+            <textarea id="recipe-ingredients" rows="7" placeholder="מצרכים (כל מצרך בשורה חדשה)"></textarea>
+        </div>
+        <div class="input-group">
+            <span class="input-icon">👩‍🍳</span>
+            <textarea id="recipe-instructions" rows="10" placeholder="אופן ההכנה..."></textarea>
+        </div>
+        <button onclick="saveRecipe()" class="btn-primary animate-btn">שמור מתכון בספר המשפחתי! <span class="emoji">👑</span></button>
+    </div>
+
+    <div id="single-recipe-screen" style="display:none;" class="card fade-in">
+        <button onclick="showListScreen()" class="btn-back animate-btn">→ חזרה לספר המתכונים <span class="emoji">📖</span></button>
+        
+        <div class="recipe-tools">
+            <button onclick="toggleMusic(event)" class="tool-btn" title="נגן מוזיקה">🎵</button>
+            <button onclick="readRecipe()" class="tool-btn" title="הקרא מתכון">🔊</button>
+            
+            <div class="like-system">
+                <button onclick="handleVote('up')" class="tool-btn vote-btn">👍</button>
+                <span id="like-count">0</span>
+                <button onclick="handleVote('down')" class="tool-btn vote-btn">👎</button>
+            </div>
+        </div>
+
+        <div id="full-recipe-content"></div>
+        
+        <div class="recipe-actions-bottom" style="display: flex; gap: 10px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+            <button id="edit-btn-placeholder" class="btn-edit-small">עריכה ✎</button>
+            <button id="delete-btn-placeholder" class="btn-delete-small">מחיקה 🗑</button>
+        </div>
+    </div>
+
+</div>
+    <script src="script.js"></script>
+</body>
+</html>
