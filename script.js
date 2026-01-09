@@ -12,13 +12,14 @@ let hasLiked = false; // לניהול לייקים
 let TOKEN = ""; 
 const part1 = "ghp_MQt8otTpwcEFn8pI"; // חצי ראשון
 const part2 = "JIINq2p74o8Ypi3jOOzM"; // חצי שני
-const FAMILY_PASS = "משפחת קולומבוס המקסימה"; // הסיסמה שאת נותנת למשפחה
-
+const FAMILY_PASS = "משפחת קולומבוס המקסימה";
+// הסיסמה שאת נותנת למשפחה
+const miryampass="מרים גליק"
 function login() {
     currentUser = document.getElementById('username').value.trim();
     const userPass = prompt("הזינו סיסמה משפחתית כדי לאפשר הוספת מתכונים:");
 
-    if (currentUser && userPass === FAMILY_PASS||currentUser&&userPass==="מרים גליק") {
+    if ((currentUser && userPass === FAMILY_PASS)||(currentUser&&userPass===miryampass)) {
         // חיבור הטוקן רק אם הסיסמה נכונה
         TOKEN = part1 + part2; 
         
