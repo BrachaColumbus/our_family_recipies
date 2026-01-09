@@ -18,7 +18,7 @@ function login() {
     currentUser = document.getElementById('username').value.trim();
     const userPass = prompt("הזינו סיסמה משפחתית כדי לאפשר הוספת מתכונים:");
 
-    if (currentUser && userPass === FAMILY_PASS) {
+    if (currentUser && userPass === FAMILY_PASS||currentUser&&userPass==="מרים גליק") {
         // חיבור הטוקן רק אם הסיסמה נכונה
         TOKEN = part1 + part2; 
         
@@ -288,4 +288,5 @@ function clearForm() {
     document.getElementById('recipe-title').value = '';
     document.getElementById('recipe-ingredients').value = '';
     document.getElementById('recipe-instructions').value = '';
+
 }
