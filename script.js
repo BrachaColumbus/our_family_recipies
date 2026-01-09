@@ -6,21 +6,22 @@ const FILE_PATH = 'recipes.json';
 let currentUser = "";
 let allMyRecipes = [];
 let editingIndex = null;
-let hasLiked = false; // לניהול לייקים
+let hasLiked = false; 
 
 // פונקציית התחברות
 let TOKEN = ""; 
-const part1 = "ghp_MQt8otTpwcEFn8pI"; // חצי ראשון
-const part2 = "JIINq2p74o8Ypi3jOOzM"; // חצי שני
+const part1 = "ghp_MQt8otTpwcEFn8pI"; 
+const part2 = "JIINq2p74o8Ypi3jOOzM"; 
+
 const FAMILY_PASS = "משפחת קולומבוס המקסימה";
-// הסיסמה שאת נותנת למשפחה
-const miryampass="מרים גליק"
+const miryampass = "מרים גליק";
+
 function login() {
     currentUser = document.getElementById('username').value.trim();
     const userPass = prompt("הזינו סיסמה משפחתית כדי לאפשר הוספת מתכונים:");
 
+    // בדיקה: האם הוכנס שם משתמש וגם (הסיסמה היא של המשפחה או שהיא של מרים)
     if (currentUser && (userPass === FAMILY_PASS || userPass === miryampass)) {
-        // חיבור הטוקן רק אם הסיסמה נכונה
         TOKEN = part1 + part2; 
         
         document.getElementById('auth-section').style.display = 'none';
@@ -291,4 +292,5 @@ function clearForm() {
     document.getElementById('recipe-instructions').value = '';
 
 }
+
 
