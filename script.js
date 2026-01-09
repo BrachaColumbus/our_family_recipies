@@ -17,11 +17,17 @@ const FAMILY_PASS = "משפחת קולומבוס המקסימה";
 const miryampass = "מרים גליק";
 
 function login() {
+    // לקיחת שם המשתמש וניקוי רווחים
     currentUser = document.getElementById('username').value.trim();
-    const userPass = prompt("הזינו סיסמה משפחתית כדי לאפשר הוספת מתכונים:");
+    
+    // לקיחת הסיסמה מהמשתמש וניקוי רווחים מיותרים מההתחלה והסוף
+    const userPass = prompt("הזינו סיסמה משפחתית כדי לאפשר הוספת מתכונים:").trim();
 
-    // בדיקה: האם הוכנס שם משתמש וגם (הסיסמה היא של המשפחה או שהיא של מרים)
-    if (currentUser && (userPass === FAMILY_PASS || userPass === miryampass)) {
+    // הגדרת הסיסמאות בצורה נקייה בתוך הפונקציה כדי למנוע בעיות גלובליות
+    const pass1 = "משפחת קולומבוס המקסימה";
+    const pass2 = "מרים גליק";
+
+    if (currentUser && (userPass === pass1 || userPass === pass2)) {
         TOKEN = part1 + part2; 
         
         document.getElementById('auth-section').style.display = 'none';
@@ -30,7 +36,7 @@ function login() {
         loadRecipes();
         alert("ברוכים הבאים למטבח! הסיסמה אושרה ✨");
     } else {
-        alert("שם משתמש או סיסמה לא נכונים. (רמז: הסיסמה שברכי נתנה לכם)");
+        alert("שם משתמש או סיסמה לא נכונים. (ודאו שכתבתם נכון עם הרווחים)");
     }
 }
 // טעינת מתכונים
@@ -292,5 +298,6 @@ function clearForm() {
     document.getElementById('recipe-instructions').value = '';
 
 }
+
 
 
