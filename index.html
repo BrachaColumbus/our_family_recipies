@@ -6,37 +6,44 @@
     <title>ספר המתכונים המשפחתי</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* התיקון הקריטי למרכז העמוד */
+        body { background-color: #f8f1e7; margin: 0; padding: 20px; }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            display: block;
+        }
+        
         .upload-container { position: relative; border: 2px dashed #D4AF37; padding: 20px; text-align: center; border-radius: 15px; background: rgba(212, 175, 55, 0.05); cursor: pointer; margin: 15px 0; }
         #file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         #image-preview { max-width: 100%; max-height: 200px; display: none; margin: 10px auto; border-radius: 10px; }
         .recipe-tools { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: center; }
         .tool-btn { background: white; border: 1px solid #D4AF37; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         .like-system { display: flex; align-items: center; gap: 8px; background: #fdf6e3; padding: 5px 15px; border-radius: 25px; border: 1px solid #D4AF37; }
-        .search-container { margin: 15px 0; }
-        #search-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #D4AF37; box-sizing: border-box; }
-        .container { 
-            max-width: 600px; 
-            margin: 0 auto; 
-            padding: 10px;
-        }
-
+        
         input, textarea {
-            box-sizing: border-box;
-            width: 100%; /* מוודא שהכל נשאר בתוך המלבן */
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid #D4AF37;
+            box-sizing: border-box; /* שומר שהכל יישאר בתוך המלבן */
+            font-family: inherit;
         }
-
+        
+        .search-container { margin: 15px 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="auth-section" class="card fade-in">
-        <h1 class="elegant-title">ספר המתכונים המשפחתי ✨</h1>
-        <input type="text" id="username" placeholder="שם המשתמש שלכם" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
+        <h1 class="elegant-title">ספר המתכונים של קולומבוס ✨</h1>
+        <input type="text" id="username" placeholder="שם המשתמש שלכם">
         <button onclick="login()" class="btn-primary animate-btn" style="width:100%;">התחבר והתחל לבשל! 🍳</button>
     </div>
 
-<div id="recipe-list-screen" style="display:none;" class="fade-in">
+    <div id="recipe-list-screen" style="display:none;" class="fade-in">
         <header class="elegant-header">
             <h1 class="elegant-title">המתכונים של <span id="display-user"></span> 📚</h1>
             <div class="header-buttons">
@@ -45,20 +52,19 @@
             </div>
         </header>
         
-        <div class="search-container card" style="margin-top: 10px; margin-bottom: 20px;">
-            <input type="text" id="search-input" placeholder="חפשי מתכון ..." oninput="filterRecipes()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #D4AF37;">
+        <div class="search-container card">
+            <input type="text" id="search-input" placeholder="חפשי מתכון..." oninput="filterRecipes()">
         </div>
 
-    </div>
         <div id="recipes-list"></div>
     </div>
 
-<div id="add-recipe-screen" style="display:none;" class="card fade-in">    
-    <button onclick="showListScreen()" class="btn-back">→ חזרה</button>
+    <div id="add-recipe-screen" style="display:none;" class="card fade-in">
+        <button onclick="showListScreen()" class="btn-back">→ חזרה</button>
         <h3 class="elegant-title">מתכון חדש 📝</h3>
-        <input type="text" id="recipe-title" placeholder="שם המתכון" style="width:100%; padding:10px; margin-bottom:10px;">
-        <textarea id="recipe-ingredients" rows="5" placeholder="מצרכים..." style="width:100%; margin-bottom:10px;"></textarea>
-        <textarea id="recipe-instructions" rows="7" placeholder="אופן ההכנה..." style="width:100%;"></textarea>
+        <input type="text" id="recipe-title" placeholder="שם המתכון">
+        <textarea id="recipe-ingredients" rows="5" placeholder="מצרכים..."></textarea>
+        <textarea id="recipe-instructions" rows="7" placeholder="אופן ההכנה..."></textarea>
 
         <div class="upload-container" id="drop-zone">
             <span style="font-size: 2rem;">📸</span>
@@ -90,6 +96,7 @@
 </div>
 
 <script>
+// הקוד של ה-JavaScript שלך נשאר זהה לחלוטין ועובד מצוין
 const OWNER = 'BrachaColumbus';
 const REPO = 'our_family_recipies';
 const FILE_PATH = 'recipes.json';
@@ -162,13 +169,8 @@ async function loadRecipes() {
 
 function renderList(recipes) {
     document.getElementById('recipes-list').innerHTML = recipes.map((r, i) => {
-        // מציאת האינדקס המקורי במערך allMyRecipes כדי שהלחיצה תפתח את המתכון הנכון
         const originalIndex = allMyRecipes.findIndex(item => item.title === r.title && item.ing === r.ing);
-        return `
-            <div class="recipe-card" onclick="openRecipe(${originalIndex})">
-                <h3>${r.title} 🥘</h3>
-            </div>
-        `;
+        return `<div class="recipe-card" onclick="openRecipe(${originalIndex})"><h3>${r.title} 🥘</h3></div>`;
     }).join('');
 }
 
@@ -187,7 +189,6 @@ function openRecipe(i) {
     document.getElementById('single-recipe-screen').style.display = 'block';
     window.speechSynthesis.cancel();
     document.getElementById('speak-btn').innerHTML = "🔊";
-
     document.getElementById('full-recipe-content').innerHTML = `
         <h2>${r.title}</h2>
         ${r.img ? `<img src="${r.img}" style="width:100%; border-radius:10px;">` : ''}
@@ -204,7 +205,6 @@ async function saveRecipe(event) {
     const btn = event.target;
     btn.innerText = "שומר... ⏳";
     btn.disabled = true;
-
     try {
         const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
             headers: { 'Authorization': `token ${TOKEN}` }
@@ -212,13 +212,11 @@ async function saveRecipe(event) {
         const fileData = await res.json();
         let content = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
         const newR = { title, ing: document.getElementById('recipe-ingredients').value, inst: document.getElementById('recipe-instructions').value, user: currentUser, img: currentImageData };
-        
         if (editingIndex !== null) {
             const oldR = allMyRecipes[editingIndex];
             const idx = content.findIndex(item => item.title === oldR.title && item.user === currentUser);
             if(idx !== -1) content[idx] = newR;
         } else { content.push(newR); }
-
         const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content))));
         await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
             method: 'PUT',
@@ -233,11 +231,7 @@ async function saveRecipe(event) {
 
 function readRecipe() {
     const btn = document.getElementById('speak-btn');
-    if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        btn.innerHTML = "🔊";
-        return;
-    }
+    if (window.speechSynthesis.speaking) { window.speechSynthesis.cancel(); btn.innerHTML = "🔊"; return; }
     const text = document.getElementById('full-recipe-content').innerText;
     const ut = new SpeechSynthesisUtterance(text);
     ut.lang = 'he-IL';
@@ -248,16 +242,10 @@ function readRecipe() {
 
 function toggleMusic() {
     const btn = document.getElementById('music-btn');
-    if (!myMagicPlayer) { 
-        myMagicPlayer = new Audio("song.mp3"); 
-        myMagicPlayer.loop = true; 
-    }
+    if (!myMagicPlayer) { myMagicPlayer = new Audio("song.mp3"); myMagicPlayer.loop = true; }
     if (myMagicPlayer.paused) {
         myMagicPlayer.play().then(() => { btn.innerHTML = "🎶"; }).catch(() => { alert("טוען מוזיקה..."); });
-    } else {
-        myMagicPlayer.pause();
-        btn.innerHTML = "🎵";
-    }
+    } else { myMagicPlayer.pause(); btn.innerHTML = "🎵"; }
 }
 
 function handleVote(t) {
@@ -316,9 +304,3 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
-
-
-
-
-
-
