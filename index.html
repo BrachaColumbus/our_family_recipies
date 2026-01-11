@@ -6,7 +6,6 @@
     <title>ספר המתכונים המשפחתי</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* עיצוב משלים כדי לוודא שהכל נראה יפה */
         .upload-container { position: relative; border: 2px dashed #D4AF37; padding: 20px; text-align: center; border-radius: 15px; background: rgba(212, 175, 55, 0.05); cursor: pointer; margin: 15px 0; }
         #file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         #image-preview { max-width: 100%; max-height: 200px; display: none; margin: 10px auto; border-radius: 10px; }
@@ -53,12 +52,11 @@
             <img id="image-preview">
         </div>
 
-        <button onclick="saveRecipe()" class="btn-primary" style="width:100%;">שמור מתכון בספר! 👑</button>
+        <button onclick="saveRecipe(event)" class="btn-primary" style="width:100%;">שמור מתכון בספר! 👑</button>
     </div>
 
     <div id="single-recipe-screen" style="display:none;" class="card fade-in">
         <button onclick="showListScreen()" class="btn-back">→ חזרה</button>
-        
         <div class="recipe-tools">
             <button onclick="toggleMusic(event)" id="music-btn" class="tool-btn">🎵</button>
             <button onclick="readRecipe(event)" id="speak-btn" class="tool-btn">🔊</button>
@@ -68,9 +66,7 @@
                 <button onclick="handleVote('down')" class="tool-btn" style="border:none; width:30px; background:none;">👎</button>
             </div>
         </div>
-
         <div id="full-recipe-content"></div>
-        
         <div style="display: flex; gap: 10px; margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
             <button id="edit-btn-placeholder" class="btn-edit-small">עריכה ✎</button>
             <button id="delete-btn-placeholder" class="btn-delete-small">מחיקה 🗑</button>
@@ -78,8 +74,6 @@
     </div>
 </div>
 
-<script>
-// נתונים אישיים
 <script>
 const OWNER = 'BrachaColumbus';
 const REPO = 'our_family_recipies';
@@ -93,9 +87,12 @@ let currentImageData = "";
 let myMagicPlayer = null;
 
 function login() {
-    currentUser = document.getElementById('username').value.trim();
+    const userVal = document.getElementById('username').value.trim();
+    if (!userVal) { alert("נא להזין שם משתמש"); return; }
+    
     let pass = prompt("הזינו סיסמה משפחתית:");
-    if (currentUser && (pass === "משפחת קולומבוס המקסימה" || pass === "מרים גליק")) {
+    if (userVal && (pass === "משפחת קולומבוס המקסימה" || pass === "מרים גליק")) {
+        currentUser = userVal;
         document.getElementById('auth-section').style.display = 'none';
         document.getElementById('recipe-list-screen').style.display = 'block';
         document.getElementById('display-user').innerText = currentUser;
@@ -103,7 +100,6 @@ function login() {
     } else { alert("טעות בסיסמה"); }
 }
 
-// פונקציה אחת שמטפלת גם בכיווץ וגם בתמונה
 function processImage(file) {
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
@@ -112,32 +108,25 @@ function processImage(file) {
         img.src = e.target.result;
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            
-            // הקטנה משמעותית לרוחב של 600 פיקסלים (מספיק לגמרי לטלפון)
             const maxWidth = 600; 
             const scale = maxWidth / img.width;
             canvas.width = maxWidth;
             canvas.height = img.height * scale;
-            
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            
-            // כיווץ איכות ל-0.5 (חצי מהמשקל המקורי) - זה הסוד!
             currentImageData = canvas.toDataURL('image/jpeg', 0.5); 
-            
             const preview = document.getElementById('image-preview');
             preview.src = currentImageData;
             preview.style.display = 'block';
-            document.getElementById('drop-text').innerText = "התמונה הוקטנה ומוכנה לשמירה! ✅";
+            document.getElementById('drop-text').innerText = "התמונה הוקטנה ומוכנה! ✅";
         };
     };
     reader.readAsDataURL(file);
 }
-// הגדרת גרירה ולחיצה מיד כשהדף עולה
+
 window.onload = () => {
     const dz = document.getElementById('drop-zone');
     const fi = document.getElementById('file-input');
-    
     if(dz) {
         dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.style.background = "#fdf6e3"; });
         dz.addEventListener('dragleave', () => { dz.style.background = "rgba(212, 175, 55, 0.05)"; });
@@ -180,14 +169,14 @@ function openRecipe(index) {
     document.getElementById('full-recipe-content').innerHTML = `
         <h1 class="elegant-title">${r.title}</h1>
         ${r.img ? `<img src="${r.img}" style="width:100%; border-radius:15px; margin-bottom:20px;">` : ''}
-        <div class="section-box"><h3>🌿 מצרכים</h3><p>${r.ing}</p></div>
+        <div class="section-box"><h3>🌿 המצרכים</h3><p>${r.ing}</p></div>
         <div class="section-box"><h3>👩‍🍳 אופן ההכנה</h3><p>${r.inst}</p></div>
     `;
     document.getElementById('edit-btn-placeholder').onclick = () => editRecipe(index);
     document.getElementById('delete-btn-placeholder').onclick = () => deleteRecipe(index);
 }
 
-async function saveRecipe() {
+async function saveRecipe(event) {
     const title = document.getElementById('recipe-title').value;
     const ing = document.getElementById('recipe-ingredients').value;
     const inst = document.getElementById('recipe-instructions').value;
@@ -219,7 +208,7 @@ async function saveRecipe() {
         alert("נשמר בהצלחה! ✨");
         showListScreen();
     } catch (e) { alert("שגיאה בשמירה"); }
-    finally { btn.innerText = "שמור מתכון! 👑"; btn.disabled = false; }
+    finally { btn.innerText = "שמור מתכון בספר! 👑"; btn.disabled = false; }
 }
 
 function readRecipe() {
@@ -279,10 +268,6 @@ function filterRecipes() {
     const term = document.getElementById('search-input').value.toLowerCase();
     renderList(allMyRecipes.filter(r => r.title.toLowerCase().includes(term)));
 }
-</script></script>
+</script>
 </body>
 </html>
-
-
-
-
