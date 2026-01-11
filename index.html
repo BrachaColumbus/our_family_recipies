@@ -25,7 +25,7 @@
         <button onclick="login()" class="btn-primary animate-btn" style="width:100%;">התחבר והתחל לבשל! 🍳</button>
     </div>
 
-    <div id="recipe-list-screen" style="display:none;" class="fade-in">
+<div id="recipe-list-screen" style="display:none;" class="fade-in">
         <header class="elegant-header">
             <h1 class="elegant-title">המתכונים של <span id="display-user"></span> 📚</h1>
             <div class="header-buttons">
@@ -34,10 +34,11 @@
             </div>
         </header>
         
-        <div class="search-container card">
-            <input type="text" id="search-input" placeholder="חפשי מתכון (לפי שם או מצרך)..." oninput="filterRecipes()">
+        <div class="search-container card" style="margin-top: 10px; margin-bottom: 20px;">
+            <input type="text" id="search-input" placeholder="חפשי מתכון (לפי שם או מצרך)..." oninput="filterRecipes()" style="width:100%; padding:12px; border-radius:10px; border:1px solid #D4AF37;">
         </div>
 
+    </div>
         <div id="recipes-list"></div>
     </div>
 
@@ -304,3 +305,4 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
+
