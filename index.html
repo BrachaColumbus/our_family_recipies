@@ -22,6 +22,9 @@
         <input type="text" id="username" placeholder="שם המשתמש שלכם" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
         <button onclick="login()" class="btn-primary animate-btn" style="width:100%;">התחבר והתחל לבשל! 🍳</button>
     </div>
+    <div class="search-section card" style="margin-bottom: 20px;">
+    <input type="text" id="search-input" placeholder="חפש מתכון שכתבת..." oninput="filterRecipes()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #eee; font-size: 1rem;">
+</div>
 
     <div id="recipe-list-screen" style="display:none;" class="fade-in">
         <header class="elegant-header">
@@ -290,9 +293,18 @@ async function deleteRecipe(i) {
     });
     showListScreen();
 }
+    function filterRecipes() {
+    const term = document.getElementById('search-input').value.toLowerCase();
+    const filtered = allMyRecipes.filter(r => 
+        r.title.toLowerCase().includes(term) || 
+        r.ing.toLowerCase().includes(term)
+    );
+    renderList(filtered);
+}
 </script>
 </body>
 </html>
+
 
 
 
