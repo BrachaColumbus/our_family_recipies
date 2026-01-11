@@ -344,15 +344,22 @@ function showListScreen() {
 }
 
 function showAddRecipeScreen() {
-    editingIndex = null; currentImageData = "";
+    editingIndex = null; 
+    currentImageData = "";
+    
+    // איפוס כל השדות
     document.getElementById('recipe-title').value = "";
     document.getElementById('recipe-ingredients').value = "";
     document.getElementById('recipe-instructions').value = "";
+    
+    // איפוס התמונה והטקסט - זה החלק שמתקן את הבעיה שלך!
     document.getElementById('image-preview').style.display = 'none';
+    document.getElementById('image-preview').src = "";
+    document.getElementById('drop-text').innerText = "לחצו כאן להוספת תמונה"; // מחזיר את הטקסט המקורי
+    
     document.getElementById('recipe-list-screen').style.display = 'none';
     document.getElementById('add-recipe-screen').style.display = 'block';
 }
-
 async function deleteRecipe(i) {
     if(!confirm("למחוק את המתכון?")) return;
     const r = allMyRecipes[i];
@@ -373,4 +380,5 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
+
 
