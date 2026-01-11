@@ -14,15 +14,17 @@
         .like-system { display: flex; align-items: center; gap: 8px; background: #fdf6e3; padding: 5px 15px; border-radius: 25px; border: 1px solid #D4AF37; }
         .search-container { margin: 15px 0; }
         #search-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #D4AF37; box-sizing: border-box; }
-        container { 
-    max-width: 600px; 
-    margin: 0 auto; 
-}
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 10px;
+        }
 
-/* זה מוודא שהתיבות לא יצאו מהגבולות של המלבן */
-input, textarea {
-    box-sizing: border-box;
-}
+        input, textarea {
+            box-sizing: border-box;
+            width: 100%; /* מוודא שהכל נשאר בתוך המלבן */
+        }
+
     </style>
 </head>
 <body>
@@ -51,8 +53,8 @@ input, textarea {
         <div id="recipes-list"></div>
     </div>
 
-    <div id="add-recipe-screen" style="display:none;" class="card fade-in","container">
-        <button onclick="showListScreen()" class="btn-back">→ חזרה</button>
+<div id="add-recipe-screen" style="display:none;" class="card fade-in">    
+    <button onclick="showListScreen()" class="btn-back">→ חזרה</button>
         <h3 class="elegant-title">מתכון חדש 📝</h3>
         <input type="text" id="recipe-title" placeholder="שם המתכון" style="width:100%; padding:10px; margin-bottom:10px;">
         <textarea id="recipe-ingredients" rows="5" placeholder="מצרכים..." style="width:100%; margin-bottom:10px;"></textarea>
@@ -314,6 +316,7 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
+
 
 
 
