@@ -82,6 +82,7 @@ let editingIndex = null;
 let currentImageData = "";
 let myMagicPlayer = null;
 
+// פונקציית התחברות
 function login() {
     const u = document.getElementById('username').value.trim();
     if(!u) return;
@@ -95,6 +96,7 @@ function login() {
     } else { alert("טעות בסיסמה"); }
 }
 
+// טיפול בתמונה + כיווץ
 function processImage(file) {
     if (!file) return;
     const reader = new FileReader();
@@ -118,6 +120,7 @@ function processImage(file) {
     reader.readAsDataURL(file);
 }
 
+// הגדרת גרירת קבצים
 window.onload = () => {
     const dz = document.getElementById('drop-zone');
     const fi = document.getElementById('file-input');
@@ -129,6 +132,7 @@ window.onload = () => {
     if(fi) { fi.addEventListener('change', (e) => processImage(e.target.files[0])); }
 };
 
+// טעינת מתכונים
 async function loadRecipes() {
     try {
         const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
@@ -153,6 +157,10 @@ function openRecipe(i) {
     const r = allMyRecipes[i];
     document.getElementById('recipe-list-screen').style.display = 'none';
     document.getElementById('single-recipe-screen').style.display = 'block';
+    // איפוס הקראה כשפותחים מתכון חדש
+    window.speechSynthesis.cancel();
+    document.getElementById('speak-btn').innerHTML = "🔊";
+
     document.getElementById('full-recipe-content').innerHTML = `
         <h2>${r.title}</h2>
         ${r.img ? `<img src="${r.img}" style="width:100%; border-radius:10px;">` : ''}
@@ -163,6 +171,7 @@ function openRecipe(i) {
     document.getElementById('delete-btn-placeholder').onclick = () => deleteRecipe(i);
 }
 
+// שמירת מתכון
 async function saveRecipe(event) {
     const title = document.getElementById('recipe-title').value;
     if(!title) return alert("צריך שם!");
@@ -195,10 +204,10 @@ async function saveRecipe(event) {
     finally { btn.innerText = "שמור מתכון! 👑"; btn.disabled = false; }
 }
 
+// הקראת מתכון - מתוקן עם עצירה ואייקונים
 function readRecipe() {
     const btn = document.getElementById('speak-btn');
     
-    // אם הוא כבר מקריא - תעצור ותחזיר את האייקון לרמקול
     if (window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
         btn.innerHTML = "🔊";
@@ -209,18 +218,13 @@ function readRecipe() {
     const ut = new SpeechSynthesisUtterance(text);
     ut.lang = 'he-IL';
 
-    // כשמתחילה ההקראה - שנה לאייקון מושתק (או עם איקס)
-    ut.onstart = () => {
-        btn.innerHTML = "🔇"; 
-    };
-
-    // כשנגמרת ההקראה - החזר לרמקול רגיל
-    ut.onend = () => {
-        btn.innerHTML = "🔊";
-    };
+    ut.onstart = () => { btn.innerHTML = "🔇"; };
+    ut.onend = () => { btn.innerHTML = "🔊"; };
 
     window.speechSynthesis.speak(ut);
 }
+
+// מוזיקה - מתוקן עם אייקונים
 function toggleMusic() {
     const btn = document.getElementById('music-btn');
     if (!myMagicPlayer) { 
@@ -230,12 +234,13 @@ function toggleMusic() {
     
     if (myMagicPlayer.paused) {
         myMagicPlayer.play();
-        btn.innerHTML = "🎶"; // משנה לתווים כשמנגן
+        btn.innerHTML = "🎶";
     } else {
         myMagicPlayer.pause();
-        btn.innerHTML = "🎵"; // מחזיר לתו בודד כשעוצר
+        btn.innerHTML = "🎵";
     }
 }
+
 function handleVote(t) {
     const s = document.getElementById('like-count');
     s.innerText = parseInt(s.innerText) + (t === 'up' ? 1 : -1);
@@ -291,4 +296,5 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
+
 
