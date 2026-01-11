@@ -603,5 +603,55 @@ function clearForm() {
 
 
 }
+document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('drop-zone');
+
+    if (dropZone) {
+        // מניעת פתיחת התמונה בדף חדש ע"י הדפדפן
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        // שינוי צבע כשגוררים מעל האזור (פידבק ויזואלי)
+        dropZone.addEventListener('dragover', () => {
+            dropZone.style.background = "#fcf8e8";
+            dropZone.style.borderColor = "#b8962d";
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.background = "rgba(212, 175, 55, 0.05)";
+            dropZone.style.borderColor = "#D4AF37";
+        });
+
+        // קליטת הקובץ שנזרק לאזור
+        dropZone.addEventListener('drop', (e) => {
+            dropZone.style.background = "rgba(212, 175, 55, 0.05)";
+            dropZone.style.borderColor = "#D4AF37";
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                // אנחנו משתמשים באותה פונקציה שכבר קיימת אצלך ב-HTML
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        currentImageData = event.target.result;
+                        const preview = document.getElementById('image-preview');
+                        preview.src = currentImageData;
+                        preview.style.display = 'block';
+                        document.getElementById('drop-text').innerText = "תמונה נגררה בהצלחה! ✨";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert("נא לגרור קבצי תמונה בלבד 🖼️");
+                }
+            }
+        });
+    }
+});
+
 
 
