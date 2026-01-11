@@ -112,21 +112,27 @@ function processImage(file) {
         img.src = e.target.result;
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            const maxWidth = 800;
+            
+            // הקטנה משמעותית לרוחב של 600 פיקסלים (מספיק לגמרי לטלפון)
+            const maxWidth = 600; 
             const scale = maxWidth / img.width;
             canvas.width = maxWidth;
             canvas.height = img.height * scale;
+            
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            currentImageData = canvas.toDataURL('image/jpeg', 0.7);
-            document.getElementById('image-preview').src = currentImageData;
-            document.getElementById('image-preview').style.display = 'block';
-            document.getElementById('drop-text').innerText = "תמונה מוכנה! ✨";
+            
+            // כיווץ איכות ל-0.5 (חצי מהמשקל המקורי) - זה הסוד!
+            currentImageData = canvas.toDataURL('image/jpeg', 0.5); 
+            
+            const preview = document.getElementById('image-preview');
+            preview.src = currentImageData;
+            preview.style.display = 'block';
+            document.getElementById('drop-text').innerText = "התמונה הוקטנה ומוכנה לשמירה! ✅";
         };
     };
     reader.readAsDataURL(file);
 }
-
 // הגדרת גרירה ולחיצה מיד כשהדף עולה
 window.onload = () => {
     const dz = document.getElementById('drop-zone');
@@ -276,6 +282,7 @@ function filterRecipes() {
 </script></script>
 </body>
 </html>
+
 
 
 
