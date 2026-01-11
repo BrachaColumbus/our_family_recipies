@@ -80,6 +80,7 @@
 
 <script>
 // נתונים אישיים
+<script>
 const OWNER = 'BrachaColumbus';
 const REPO = 'our_family_recipies';
 const FILE_PATH = 'recipes.json';
@@ -91,7 +92,6 @@ let editingIndex = null;
 let currentImageData = "";
 let myMagicPlayer = null;
 
-// התחברות
 function login() {
     currentUser = document.getElementById('username').value.trim();
     let pass = prompt("הזינו סיסמה משפחתית:");
@@ -100,44 +100,52 @@ function login() {
         document.getElementById('recipe-list-screen').style.display = 'block';
         document.getElementById('display-user').innerText = currentUser;
         loadRecipes();
-    } else { alert("הפרטים אינם נכונים"); }
+    } else { alert("טעות בסיסמה"); }
 }
 
-// ניהול תמונה
-// --- זה הקוד החדש שדואג לכיווץ התמונה ולמהירות האתר ---
-document.addEventListener('change', function(e) {
-    if (e.target && e.target.id === 'file-input') {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    // יצירת קנבס להקטנת התמונה
-                    const canvas = document.createElement('canvas');
-                    const maxWidth = 800; // מקטין את הרוחב ל-800 פיקסלים בלבד
-                    const scale = maxWidth / img.width;
-                    canvas.width = maxWidth;
-                    canvas.height = img.height * scale;
+// פונקציה אחת שמטפלת גם בכיווץ וגם בתמונה
+function processImage(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxWidth = 800;
+            const scale = maxWidth / img.width;
+            canvas.width = maxWidth;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            currentImageData = canvas.toDataURL('image/jpeg', 0.7);
+            document.getElementById('image-preview').src = currentImageData;
+            document.getElementById('image-preview').style.display = 'block';
+            document.getElementById('drop-text').innerText = "תמונה מוכנה! ✨";
+        };
+    };
+    reader.readAsDataURL(file);
+}
 
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    // שמירה כקובץ JPEG קל מאוד (70% איכות)
-                    currentImageData = canvas.toDataURL('image/jpeg', 0.7);
-                    
-                    const preview = document.getElementById('image-preview');
-                    preview.src = currentImageData;
-                    preview.style.display = 'block';
-                    document.getElementById('drop-text').innerText = "התמונה כווצה ומוכנה! ⚡";
-                };
-            };
-            reader.readAsDataURL(file);
-        }
+// הגדרת גרירה ולחיצה מיד כשהדף עולה
+window.onload = () => {
+    const dz = document.getElementById('drop-zone');
+    const fi = document.getElementById('file-input');
+    
+    if(dz) {
+        dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.style.background = "#fdf6e3"; });
+        dz.addEventListener('dragleave', () => { dz.style.background = "rgba(212, 175, 55, 0.05)"; });
+        dz.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dz.style.background = "rgba(212, 175, 55, 0.05)";
+            processImage(e.dataTransfer.files[0]);
+        });
     }
-});
-// טעינה מגיטהאב
+    if(fi) {
+        fi.addEventListener('change', (e) => processImage(e.target.files[0]));
+    }
+};
+
 async function loadRecipes() {
     try {
         const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
@@ -147,183 +155,103 @@ async function loadRecipes() {
         const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         allMyRecipes = content.filter(r => r.user === currentUser);
         renderList(allMyRecipes);
-    } catch (e) { console.log("שגיאה בטעינה"); }
+    } catch (e) { console.error("טעינה נכשלה"); }
 }
 
 function renderList(recipes) {
-    const list = document.getElementById('recipes-list');
-    list.innerHTML = recipes.map((r, i) => `
+    document.getElementById('recipes-list').innerHTML = recipes.map((r, i) => `
         <div class="recipe-card" onclick="openRecipe(${i})">
-            <div class="recipe-header">
-                <h3>${r.title} 🥘</h3>
-                <span>⬅</span>
-            </div>
+            <h3>${r.title} 🥘</h3>
         </div>
     `).join('');
 }
 
-// פתיחת מתכון
 function openRecipe(index) {
     const r = allMyRecipes[index];
     document.getElementById('recipe-list-screen').style.display = 'none';
     document.getElementById('single-recipe-screen').style.display = 'block';
-    
-    // איפוס כפתור הקראה למקרה שנשאר 🔇 ממתכון קודם
     window.speechSynthesis.cancel();
-    document.getElementById('speak-btn').innerHTML = '🔊';
-
     document.getElementById('full-recipe-content').innerHTML = `
         <h1 class="elegant-title">${r.title}</h1>
-        ${r.img ? `<img src="${r.img}" style="width:100%; border-radius:15px; margin-bottom:20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">` : ''}
-        <div class="section-box"><h3>🌿 המצרכים</h3><p>${r.ing}</p></div>
+        ${r.img ? `<img src="${r.img}" style="width:100%; border-radius:15px; margin-bottom:20px;">` : ''}
+        <div class="section-box"><h3>🌿 מצרכים</h3><p>${r.ing}</p></div>
         <div class="section-box"><h3>👩‍🍳 אופן ההכנה</h3><p>${r.inst}</p></div>
     `;
     document.getElementById('edit-btn-placeholder').onclick = () => editRecipe(index);
     document.getElementById('delete-btn-placeholder').onclick = () => deleteRecipe(index);
-    document.getElementById('like-count').innerText = "0";
-    window.scrollTo(0,0);
 }
 
-// הקראת מתכון מתוקנת
-function readRecipe(event) {
-    const btn = document.getElementById('speak-btn');
-    
-    if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        btn.innerHTML = '🔊';
-        return;
-    }
-
-    const text = document.getElementById('full-recipe-content').innerText;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'he-IL';
-    utterance.rate = 0.9;
-
-    utterance.onstart = () => btn.innerHTML = '🔇';
-    utterance.onend = () => btn.innerHTML = '🔊';
-    utterance.onerror = () => btn.innerHTML = '🔊';
-
-    window.speechSynthesis.speak(utterance);
-}
-
-// לייקים
-function handleVote(type) {
-    const span = document.getElementById('like-count');
-    let count = parseInt(span.innerText);
-    span.innerText = type === 'up' ? count + 1 : count - 1;
-}
-
-// מוזיקה
-function toggleMusic(e) {
-    const btn = document.getElementById('music-btn');
-    if (!myMagicPlayer) {
-        myMagicPlayer = new Audio("song.mp3");
-        myMagicPlayer.loop = true;
-    }
-    if (myMagicPlayer.paused) {
-        myMagicPlayer.play();
-        btn.innerHTML = "🎶";
-        btn.style.background = "#D4AF37";
-    } else {
-        myMagicPlayer.pause();
-        btn.innerHTML = "🎵";
-        btn.style.background = "white";
-    }
-}
-
-// שמירה ועריכה
 async function saveRecipe() {
     const title = document.getElementById('recipe-title').value;
     const ing = document.getElementById('recipe-ingredients').value;
     const inst = document.getElementById('recipe-instructions').value;
+    if(!title) { alert("חובה שם למתכון"); return; }
 
-    if (!title || !ing || !inst) {
-        alert("נא למלא את כל השדות ✨");
-        return;
-    }
-
-    // הודעה למשתמש שהשמירה התחילה (כי זה לוקח רגע)
-    const saveBtn = event.target;
-    const originalText = saveBtn.innerText;
-    saveBtn.innerText = "שומר... נא לא לסגור! ⏳";
-    saveBtn.disabled = true;
+    const btn = event.target;
+    btn.innerText = "שומר... ⏳";
+    btn.disabled = true;
 
     try {
-        const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+        const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
             headers: { 'Authorization': `token ${TOKEN}` }
         });
-        const fileData = await response.json();
-        const decodedContent = decodeURIComponent(escape(atob(fileData.content)));
-        let content = JSON.parse(decodedContent);
+        const fileData = await res.json();
+        let content = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
 
         const newR = { title, ing, inst, user: currentUser, img: currentImageData };
-
         if (editingIndex !== null) {
-            const oldRecipe = allMyRecipes[editingIndex];
-            const idxInFull = content.findIndex(r => r.title === oldRecipe.title && r.user === currentUser);
-            if (idxInFull !== -1) content[idxInFull] = newR;
-        } else {
-            content.push(newR);
-        }
+            const idx = content.findIndex(item => item.title === allMyRecipes[editingIndex].title && item.user === currentUser);
+            if(idx !== -1) content[idx] = newR;
+        } else { content.push(newR); }
 
         const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content))));
-        
-        const updateRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+        await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
             method: 'PUT',
             headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: "Update Recipe", content: encoded, sha: fileData.sha })
+            body: JSON.stringify({ message: "Save", content: encoded, sha: fileData.sha })
         });
-
-        if (updateRes.ok) {
-            alert("נשמר בהצלחה! 👑");
-            showListScreen();
-        } else {
-            throw new Error("שגיאה בגישה לשרת");
-        }
-    } catch (e) {
-        alert("אופס! השמירה נכשלה. כנראה שהתמונה גדולה מדי. נסי להעלות תמונה קטנה יותר.");
-        console.error(e);
-    } finally {
-        saveBtn.innerText = originalText;
-        saveBtn.disabled = false;
-    }
+        alert("נשמר בהצלחה! ✨");
+        showListScreen();
+    } catch (e) { alert("שגיאה בשמירה"); }
+    finally { btn.innerText = "שמור מתכון! 👑"; btn.disabled = false; }
 }
-    function editRecipe(index) {
+
+function readRecipe() {
+    const btn = document.getElementById('speak-btn');
+    if (window.speechSynthesis.speaking) { window.speechSynthesis.cancel(); btn.innerHTML = '🔊'; return; }
+    const text = document.getElementById('full-recipe-content').innerText;
+    const ut = new SpeechSynthesisUtterance(text);
+    ut.lang = 'he-IL';
+    ut.onstart = () => btn.innerHTML = '🔇';
+    ut.onend = () => btn.innerHTML = '🔊';
+    window.speechSynthesis.speak(ut);
+}
+
+function toggleMusic() {
+    const btn = document.getElementById('music-btn');
+    if (!myMagicPlayer) { myMagicPlayer = new Audio("song.mp3"); myMagicPlayer.loop = true; }
+    if (myMagicPlayer.paused) { myMagicPlayer.play(); btn.innerHTML = "🎶"; }
+    else { myMagicPlayer.pause(); btn.innerHTML = "🎵"; }
+}
+
+function handleVote(type) {
+    const s = document.getElementById('like-count');
+    s.innerText = parseInt(s.innerText) + (type === 'up' ? 1 : -1);
+}
+
+function editRecipe(index) {
     const r = allMyRecipes[index];
     editingIndex = index;
     document.getElementById('recipe-title').value = r.title;
     document.getElementById('recipe-ingredients').value = r.ing;
     document.getElementById('recipe-instructions').value = r.inst;
-    if(r.img) {
-        currentImageData = r.img;
-        document.getElementById('image-preview').src = r.img;
-        document.getElementById('image-preview').style.display = 'block';
-    }
+    currentImageData = r.img || "";
+    document.getElementById('image-preview').src = currentImageData;
+    document.getElementById('image-preview').style.display = r.img ? 'block' : 'none';
     document.getElementById('single-recipe-screen').style.display = 'none';
     document.getElementById('add-recipe-screen').style.display = 'block';
-    document.querySelector('.add-edit-title').innerText = "עריכת מתכון ✨";
 }
 
-async function deleteRecipe(index) {
-    if(!confirm("למחוק? 🗑")) return;
-    const rToDelete = allMyRecipes[index];
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
-        headers: { 'Authorization': `token ${TOKEN}` }
-    });
-    const fileData = await res.json();
-    let content = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
-    content = content.filter(item => !(item.title === rToDelete.title && item.user === currentUser));
-    
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content))));
-    await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
-        method: 'PUT',
-        headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: "Delete", content: encoded, sha: fileData.sha })
-    });
-    showListScreen();
-}
-
-// ניווט
 function showListScreen() {
     document.getElementById('add-recipe-screen').style.display = 'none';
     document.getElementById('single-recipe-screen').style.display = 'none';
@@ -332,25 +260,22 @@ function showListScreen() {
 }
 
 function showAddRecipeScreen() {
-    editingIndex = null;
-    currentImageData = "";
+    editingIndex = null; currentImageData = "";
     document.getElementById('recipe-title').value = "";
     document.getElementById('recipe-ingredients').value = "";
     document.getElementById('recipe-instructions').value = "";
     document.getElementById('image-preview').style.display = 'none';
-    document.getElementById('drop-text').innerText = "לחצו כאן להוספת תמונה";
     document.getElementById('recipe-list-screen').style.display = 'none';
     document.getElementById('add-recipe-screen').style.display = 'block';
-    document.querySelector('.add-edit-title').innerText = "מתכון חדש 📝";
 }
 
 function filterRecipes() {
     const term = document.getElementById('search-input').value.toLowerCase();
-    const filtered = allMyRecipes.filter(r => r.title.toLowerCase().includes(term));
-    renderList(filtered);
+    renderList(allMyRecipes.filter(r => r.title.toLowerCase().includes(term)));
 }
-</script>
+</script></script>
 </body>
 </html>
+
 
 
