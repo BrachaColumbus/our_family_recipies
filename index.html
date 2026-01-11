@@ -226,20 +226,17 @@ function readRecipe() {
 
 // מוזיקה - מתוקן עם אייקונים
 function toggleMusic() {
+
     const btn = document.getElementById('music-btn');
-    if (!myMagicPlayer) { 
-        myMagicPlayer = new Audio("song.mp3"); 
-        myMagicPlayer.loop = true; 
-    }
-    
-    if (myMagicPlayer.paused) {
-        myMagicPlayer.play();
-        btn.innerHTML = "🎶";
-    } else {
-        myMagicPlayer.pause();
-        btn.innerHTML = "🎵";
-    }
+
+    if (!myMagicPlayer) { myMagicPlayer = new Audio("song.mp3"); myMagicPlayer.loop = true; }
+
+    if (myMagicPlayer.paused) { myMagicPlayer.play(); btn.innerHTML = "🎶"; }
+
+    else { myMagicPlayer.pause(); btn.innerHTML = "🎵"; }
+
 }
+
 
 function handleVote(t) {
     const s = document.getElementById('like-count');
@@ -296,5 +293,6 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
+
 
 
