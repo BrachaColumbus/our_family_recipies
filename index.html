@@ -196,17 +196,46 @@ async function saveRecipe(event) {
 }
 
 function readRecipe() {
-    window.speechSynthesis.cancel();
-    const ut = new SpeechSynthesisUtterance(document.getElementById('full-recipe-content').innerText);
+    const btn = document.getElementById('speak-btn');
+    
+    // אם הוא כבר מקריא - תעצור ותחזיר את האייקון לרמקול
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        btn.innerHTML = "🔊";
+        return;
+    }
+
+    const text = document.getElementById('full-recipe-content').innerText;
+    const ut = new SpeechSynthesisUtterance(text);
     ut.lang = 'he-IL';
+
+    // כשמתחילה ההקראה - שנה לאייקון מושתק (או עם איקס)
+    ut.onstart = () => {
+        btn.innerHTML = "🔇"; 
+    };
+
+    // כשנגמרת ההקראה - החזר לרמקול רגיל
+    ut.onend = () => {
+        btn.innerHTML = "🔊";
+    };
+
     window.speechSynthesis.speak(ut);
 }
-
 function toggleMusic() {
-    if(!myMagicPlayer) { myMagicPlayer = new Audio("song.mp3"); myMagicPlayer.loop = true; }
-    myMagicPlayer.paused ? myMagicPlayer.play() : myMagicPlayer.pause();
+    const btn = document.getElementById('music-btn');
+    if (!myMagicPlayer) { 
+        myMagicPlayer = new Audio("song.mp3"); 
+        myMagicPlayer.loop = true; 
+    }
+    
+    if (myMagicPlayer.paused) {
+        myMagicPlayer.play();
+        btn.innerHTML = "🎶"; // משנה לתווים כשמנגן
+    } else {
+        myMagicPlayer.pause();
+        btn.innerHTML = "🎵"; // מחזיר לתו בודד כשעוצר
+    }
 }
-
 function handleVote(t) {
     const s = document.getElementById('like-count');
     s.innerText = parseInt(s.innerText) + (t === 'up' ? 1 : -1);
@@ -262,3 +291,4 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
+
