@@ -236,33 +236,59 @@ async function saveRecipe() {
     const title = document.getElementById('recipe-title').value;
     const ing = document.getElementById('recipe-ingredients').value;
     const inst = document.getElementById('recipe-instructions').value;
-    if(!title || !ing || !inst) return alert("נא למלא את כל השדות ✨");
 
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
-        headers: { 'Authorization': `token ${TOKEN}` }
-    });
-    const fileData = await res.json();
-    let content = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+    if (!title || !ing || !inst) {
+        alert("נא למלא את כל השדות ✨");
+        return;
+    }
 
-    const newR = { title, ing, inst, user: currentUser, img: currentImageData };
-    
-    if (editingIndex !== null) {
-        const oldR = allMyRecipes[editingIndex];
-        const idx = content.findIndex(item => item.title === oldR.title && item.user === currentUser);
-        if (idx !== -1) content[idx] = newR;
-    } else { content.push(newR); }
+    // הודעה למשתמש שהשמירה התחילה (כי זה לוקח רגע)
+    const saveBtn = event.target;
+    const originalText = saveBtn.innerText;
+    saveBtn.innerText = "שומר... נא לא לסגור! ⏳";
+    saveBtn.disabled = true;
 
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content))));
-    await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
-        method: 'PUT',
-        headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: "Save Recipe", content: encoded, sha: fileData.sha })
-    });
-    alert("נשמר בהצלחה! 👑");
-    showListScreen();
+    try {
+        const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+            headers: { 'Authorization': `token ${TOKEN}` }
+        });
+        const fileData = await response.json();
+        const decodedContent = decodeURIComponent(escape(atob(fileData.content)));
+        let content = JSON.parse(decodedContent);
+
+        const newR = { title, ing, inst, user: currentUser, img: currentImageData };
+
+        if (editingIndex !== null) {
+            const oldRecipe = allMyRecipes[editingIndex];
+            const idxInFull = content.findIndex(r => r.title === oldRecipe.title && r.user === currentUser);
+            if (idxInFull !== -1) content[idxInFull] = newR;
+        } else {
+            content.push(newR);
+        }
+
+        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content))));
+        
+        const updateRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: "Update Recipe", content: encoded, sha: fileData.sha })
+        });
+
+        if (updateRes.ok) {
+            alert("נשמר בהצלחה! 👑");
+            showListScreen();
+        } else {
+            throw new Error("שגיאה בגישה לשרת");
+        }
+    } catch (e) {
+        alert("אופס! השמירה נכשלה. כנראה שהתמונה גדולה מדי. נסי להעלות תמונה קטנה יותר.");
+        console.error(e);
+    } finally {
+        saveBtn.innerText = originalText;
+        saveBtn.disabled = false;
+    }
 }
-
-function editRecipe(index) {
+    function editRecipe(index) {
     const r = allMyRecipes[index];
     editingIndex = index;
     document.getElementById('recipe-title').value = r.title;
@@ -326,4 +352,5 @@ function filterRecipes() {
 </script>
 </body>
 </html>
+
 
