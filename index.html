@@ -12,6 +12,8 @@
         .recipe-tools { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: center; }
         .tool-btn { background: white; border: 1px solid #D4AF37; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         .like-system { display: flex; align-items: center; gap: 8px; background: #fdf6e3; padding: 5px 15px; border-radius: 25px; border: 1px solid #D4AF37; }
+        .search-container { margin: 15px 0; }
+        #search-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #D4AF37; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -22,9 +24,6 @@
         <input type="text" id="username" placeholder="שם המשתמש שלכם" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
         <button onclick="login()" class="btn-primary animate-btn" style="width:100%;">התחבר והתחל לבשל! 🍳</button>
     </div>
-    <div class="search-section card" style="margin-bottom: 20px;">
-    <input type="text" id="search-input" placeholder="חפש מתכון שכתבת..." oninput="filterRecipes()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #eee; font-size: 1rem;">
-</div>
 
     <div id="recipe-list-screen" style="display:none;" class="fade-in">
         <header class="elegant-header">
@@ -34,6 +33,11 @@
                 <button onclick="location.reload()" class="btn-logout">יציאה 🚪</button>
             </div>
         </header>
+        
+        <div class="search-container card">
+            <input type="text" id="search-input" placeholder="חפשי מתכון (לפי שם או מצרך)..." oninput="filterRecipes()">
+        </div>
+
         <div id="recipes-list"></div>
     </div>
 
@@ -85,7 +89,6 @@ let editingIndex = null;
 let currentImageData = "";
 let myMagicPlayer = null;
 
-// פונקציית התחברות
 function login() {
     const u = document.getElementById('username').value.trim();
     if(!u) return;
@@ -99,7 +102,6 @@ function login() {
     } else { alert("טעות בסיסמה"); }
 }
 
-// טיפול בתמונה + כיווץ
 function processImage(file) {
     if (!file) return;
     const reader = new FileReader();
@@ -123,7 +125,6 @@ function processImage(file) {
     reader.readAsDataURL(file);
 }
 
-// הגדרת גרירת קבצים
 window.onload = () => {
     const dz = document.getElementById('drop-zone');
     const fi = document.getElementById('file-input');
@@ -135,7 +136,6 @@ window.onload = () => {
     if(fi) { fi.addEventListener('change', (e) => processImage(e.target.files[0])); }
 };
 
-// טעינת מתכונים
 async function loadRecipes() {
     try {
         const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
@@ -149,18 +149,30 @@ async function loadRecipes() {
 }
 
 function renderList(recipes) {
-    document.getElementById('recipes-list').innerHTML = recipes.map((r, i) => `
-        <div class="recipe-card" onclick="openRecipe(${i})">
-            <h3>${r.title} 🥘</h3>
-        </div>
-    `).join('');
+    document.getElementById('recipes-list').innerHTML = recipes.map((r, i) => {
+        // מציאת האינדקס המקורי במערך allMyRecipes כדי שהלחיצה תפתח את המתכון הנכון
+        const originalIndex = allMyRecipes.findIndex(item => item.title === r.title && item.ing === r.ing);
+        return `
+            <div class="recipe-card" onclick="openRecipe(${originalIndex})">
+                <h3>${r.title} 🥘</h3>
+            </div>
+        `;
+    }).join('');
+}
+
+function filterRecipes() {
+    const term = document.getElementById('search-input').value.toLowerCase();
+    const filtered = allMyRecipes.filter(r => 
+        r.title.toLowerCase().includes(term) || 
+        r.ing.toLowerCase().includes(term)
+    );
+    renderList(filtered);
 }
 
 function openRecipe(i) {
     const r = allMyRecipes[i];
     document.getElementById('recipe-list-screen').style.display = 'none';
     document.getElementById('single-recipe-screen').style.display = 'block';
-    // איפוס הקראה כשפותחים מתכון חדש
     window.speechSynthesis.cancel();
     document.getElementById('speak-btn').innerHTML = "🔊";
 
@@ -174,7 +186,6 @@ function openRecipe(i) {
     document.getElementById('delete-btn-placeholder').onclick = () => deleteRecipe(i);
 }
 
-// שמירת מתכון
 async function saveRecipe(event) {
     const title = document.getElementById('recipe-title').value;
     if(!title) return alert("צריך שם!");
@@ -191,7 +202,8 @@ async function saveRecipe(event) {
         const newR = { title, ing: document.getElementById('recipe-ingredients').value, inst: document.getElementById('recipe-instructions').value, user: currentUser, img: currentImageData };
         
         if (editingIndex !== null) {
-            const idx = content.findIndex(item => item.title === allMyRecipes[editingIndex].title && item.user === currentUser);
+            const oldR = allMyRecipes[editingIndex];
+            const idx = content.findIndex(item => item.title === oldR.title && item.user === currentUser);
             if(idx !== -1) content[idx] = newR;
         } else { content.push(newR); }
 
@@ -203,43 +215,38 @@ async function saveRecipe(event) {
         });
         alert("נשמר!");
         showListScreen();
-    } catch (e) { alert("שגיאה"); }
+    } catch (e) { alert("שגיאה בשמירה"); }
     finally { btn.innerText = "שמור מתכון! 👑"; btn.disabled = false; }
 }
 
-// הקראת מתכון - מתוקן עם עצירה ואייקונים
 function readRecipe() {
     const btn = document.getElementById('speak-btn');
-    
     if (window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
         btn.innerHTML = "🔊";
         return;
     }
-
     const text = document.getElementById('full-recipe-content').innerText;
     const ut = new SpeechSynthesisUtterance(text);
     ut.lang = 'he-IL';
-
     ut.onstart = () => { btn.innerHTML = "🔇"; };
     ut.onend = () => { btn.innerHTML = "🔊"; };
-
     window.speechSynthesis.speak(ut);
 }
 
-// מוזיקה - מתוקן עם אייקונים
 function toggleMusic() {
-
     const btn = document.getElementById('music-btn');
-
-    if (!myMagicPlayer) { myMagicPlayer = new Audio("song.mp3"); myMagicPlayer.loop = true; }
-
-    if (myMagicPlayer.paused) { myMagicPlayer.play(); btn.innerHTML = "🎶"; }
-
-    else { myMagicPlayer.pause(); btn.innerHTML = "🎵"; }
-
+    if (!myMagicPlayer) { 
+        myMagicPlayer = new Audio("song.mp3"); 
+        myMagicPlayer.loop = true; 
+    }
+    if (myMagicPlayer.paused) {
+        myMagicPlayer.play().then(() => { btn.innerHTML = "🎶"; }).catch(() => { alert("טוען מוזיקה..."); });
+    } else {
+        myMagicPlayer.pause();
+        btn.innerHTML = "🎵";
+    }
 }
-
 
 function handleVote(t) {
     const s = document.getElementById('like-count');
@@ -263,6 +270,7 @@ function showListScreen() {
     document.getElementById('add-recipe-screen').style.display = 'none';
     document.getElementById('single-recipe-screen').style.display = 'none';
     document.getElementById('recipe-list-screen').style.display = 'block';
+    document.getElementById('search-input').value = "";
     loadRecipes();
 }
 
@@ -277,7 +285,7 @@ function showAddRecipeScreen() {
 }
 
 async function deleteRecipe(i) {
-    if(!confirm("למחוק?")) return;
+    if(!confirm("למחוק את המתכון?")) return;
     const r = allMyRecipes[i];
     const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
         headers: { 'Authorization': `token ${TOKEN}` }
@@ -293,18 +301,6 @@ async function deleteRecipe(i) {
     });
     showListScreen();
 }
-    function filterRecipes() {
-    const term = document.getElementById('search-input').value.toLowerCase();
-    const filtered = allMyRecipes.filter(r => 
-        r.title.toLowerCase().includes(term) || 
-        r.ing.toLowerCase().includes(term)
-    );
-    renderList(filtered);
-}
 </script>
 </body>
 </html>
-
-
-
-
