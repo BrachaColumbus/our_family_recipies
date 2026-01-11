@@ -104,23 +104,39 @@ function login() {
 }
 
 // ניהול תמונה
+// --- זה הקוד החדש שדואג לכיווץ התמונה ולמהירות האתר ---
 document.addEventListener('change', function(e) {
     if (e.target && e.target.id === 'file-input') {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (event) => {
-                currentImageData = event.target.result;
-                const preview = document.getElementById('image-preview');
-                preview.src = currentImageData;
-                preview.style.display = 'block';
-                document.getElementById('drop-text').innerText = "תמונה נבחרה בהצלחה! ✨";
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    // יצירת קנבס להקטנת התמונה
+                    const canvas = document.createElement('canvas');
+                    const maxWidth = 800; // מקטין את הרוחב ל-800 פיקסלים בלבד
+                    const scale = maxWidth / img.width;
+                    canvas.width = maxWidth;
+                    canvas.height = img.height * scale;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // שמירה כקובץ JPEG קל מאוד (70% איכות)
+                    currentImageData = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    const preview = document.getElementById('image-preview');
+                    preview.src = currentImageData;
+                    preview.style.display = 'block';
+                    document.getElementById('drop-text').innerText = "התמונה כווצה ומוכנה! ⚡";
+                };
             };
             reader.readAsDataURL(file);
         }
     }
 });
-
 // טעינה מגיטהאב
 async function loadRecipes() {
     try {
@@ -310,3 +326,4 @@ function filterRecipes() {
 </script>
 </body>
 </html>
+
