@@ -1,168 +1,312 @@
 <!DOCTYPE html>
-
 <html lang="he" dir="rtl">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>ספר המתכונים המשפחתי</title>
-
     <link rel="stylesheet" href="style.css">
-
+    <style>
+        /* עיצוב משלים כדי לוודא שהכל נראה יפה */
+        .upload-container { position: relative; border: 2px dashed #D4AF37; padding: 20px; text-align: center; border-radius: 15px; background: rgba(212, 175, 55, 0.05); cursor: pointer; margin: 15px 0; }
+        #file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        #image-preview { max-width: 100%; max-height: 200px; display: none; margin: 10px auto; border-radius: 10px; }
+        .recipe-tools { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; justify-content: center; }
+        .tool-btn { background: white; border: 1px solid #D4AF37; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 1.2rem; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+        .tool-btn:hover { background: #fdf6e3; transform: scale(1.1); }
+        .like-system { display: flex; align-items: center; gap: 8px; background: #fdf6e3; padding: 5px 15px; border-radius: 25px; border: 1px solid #D4AF37; }
+    </style>
 </head>
-
 <body>
 
 <div class="container">
-
-    
-
     <div id="auth-section" class="card fade-in">
-
-        <h1 class="elegant-title">ברוכים הבאים לספר המתכונים המשפחתי <span class="emoji">✨</span></h1>
-
-        <div class="input-group">
-
-            <span class="input-icon">👤</span>
-
-            <input type="text" id="username" placeholder="הזינו שם המשפחה שלכם">
-
-        </div>
-
-        <div class="auth-buttons">
-
-            <button onclick="login()" class="btn-primary animate-btn">התחבר והתחל לבשל! <span class="emoji">🍳</span></button>
-
-        </div>
-
+        <h1 class="elegant-title">ספר המתכונים של קולומבוס ✨</h1>
+        <input type="text" id="username" placeholder="שם המשתמש שלכם" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
+        <button onclick="login()" class="btn-primary animate-btn" style="width:100%;">התחבר והתחל לבשל! 🍳</button>
     </div>
-
-
 
     <div id="recipe-list-screen" style="display:none;" class="fade-in">
-
         <header class="elegant-header">
-
-            <h1 class="elegant-title">המתכונים של <span id="display-user"></span> <span class="emoji">📚</span></h1>
-
+            <h1 class="elegant-title">המתכונים של <span id="display-user"></span> 📚</h1>
             <div class="header-buttons">
-
-                <button onclick="showAddRecipeScreen()" class="btn-add animate-btn">+ הוסף מתכון לספר המשפחתי! <span class="emoji">💎</span></button>
-
-                <button onclick="location.reload()" class="btn-logout animate-btn">יציאה <span class="emoji">🚪</span></button>
-
+                <button onclick="showAddRecipeScreen()" class="btn-add">+ הוסף מתכון</button>
+                <button onclick="location.reload()" class="btn-logout">יציאה 🚪</button>
             </div>
-
         </header>
-
-        
-
-        <div class="search-section card slide-in">
-
-            <span class="input-icon">🔍</span>
-
-            <input type="text" id="search-input" placeholder="מצא מתכון לפי שם..." oninput="filterRecipes()">
-
+        <div class="search-section card">
+            <input type="text" id="search-input" placeholder="חפש מתכון שכתבת..." oninput="filterRecipes()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #eee;">
         </div>
-
-
-
         <div id="recipes-list"></div>
-
     </div>
-
-
 
     <div id="add-recipe-screen" style="display:none;" class="card fade-in">
+        <button onclick="showListScreen()" class="btn-back">→ חזרה</button>
+        <h3 class="elegant-title add-edit-title">מתכון חדש 📝</h3>
+        <input type="text" id="recipe-title" placeholder="שם המתכון" style="width:100%; padding:10px; margin-bottom:10px;">
+        <textarea id="recipe-ingredients" rows="5" placeholder="מצרכים..." style="width:100%; margin-bottom:10px;"></textarea>
+        <textarea id="recipe-instructions" rows="7" placeholder="אופן ההכנה..." style="width:100%;"></textarea>
 
-        <button onclick="showListScreen()" class="btn-back animate-btn">→ חזרה לרשימה <span class="emoji">🌟</span></button>
-
-        <h3 class="elegant-title add-edit-title">הוספת מתכון חדש <span class="emoji">📝</span></h3>
-
-        <div class="input-group">
-
-            <span class="input-icon">🍽️</span>
-
-            <input type="text" id="recipe-title" placeholder="שם המתכון">
-
+        <div class="upload-container" id="drop-zone">
+            <span style="font-size: 2rem;">📸</span>
+            <p id="drop-text">לחצו כאן להוספת תמונה</p>
+            <input type="file" id="file-input" accept="image/*">
+            <img id="image-preview">
         </div>
 
-        <div class="input-group">
-
-            <span class="input-icon">🌿</span>
-
-            <textarea id="recipe-ingredients" rows="7" placeholder="מצרכים (כל מצרך בשורה חדשה)"></textarea>
-
-        </div>
-
-        <div class="input-group">
-
-            <span class="input-icon">👩‍🍳</span>
-
-            <textarea id="recipe-instructions" rows="10" placeholder="אופן ההכנה..."></textarea>
-
-        </div>
-
-        <button onclick="saveRecipe()" class="btn-primary animate-btn">שמור מתכון בספר המשפחתי! <span class="emoji">👑</span></button>
-
+        <button onclick="saveRecipe()" class="btn-primary" style="width:100%;">שמור מתכון בספר! 👑</button>
     </div>
-
-
 
     <div id="single-recipe-screen" style="display:none;" class="card fade-in">
-
-        <button onclick="showListScreen()" class="btn-back animate-btn">→ חזרה לספר המתכונים <span class="emoji">📖</span></button>
-
+        <button onclick="showListScreen()" class="btn-back">→ חזרה</button>
         
-
         <div class="recipe-tools">
-
-            <button onclick="toggleMusic(event)" class="tool-btn" title="נגן מוזיקה">🎵</button>
-
-            <button onclick="readRecipe()" class="tool-btn" title="הקרא מתכון">🔊</button>
-
-            
-
+            <button onclick="toggleMusic(event)" id="music-btn" class="tool-btn">🎵</button>
+            <button onclick="readRecipe(event)" id="speak-btn" class="tool-btn">🔊</button>
             <div class="like-system">
-
-                <button onclick="handleVote('up')" class="tool-btn vote-btn">👍</button>
-
-                <span id="like-count">0</span>
-
-                <button onclick="handleVote('down')" class="tool-btn vote-btn">👎</button>
-
+                <button onclick="handleVote('up')" class="tool-btn" style="border:none; width:30px; background:none;">👍</button>
+                <span id="like-count" style="font-weight:bold; color:#D4AF37;">0</span>
+                <button onclick="handleVote('down')" class="tool-btn" style="border:none; width:30px; background:none;">👎</button>
             </div>
-
         </div>
-
-
 
         <div id="full-recipe-content"></div>
-
         
-
-        <div class="recipe-actions-bottom" style="display: flex; gap: 10px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
-
+        <div style="display: flex; gap: 10px; margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
             <button id="edit-btn-placeholder" class="btn-edit-small">עריכה ✎</button>
-
             <button id="delete-btn-placeholder" class="btn-delete-small">מחיקה 🗑</button>
-
         </div>
-
     </div>
-
-
-
 </div>
 
-    <script src="script.js"></script>
+<script>
+// נתונים אישיים
+const OWNER = 'BrachaColumbus';
+const REPO = 'our_family_recipies';
+const FILE_PATH = 'recipes.json';
+const TOKEN = "ghp_MQt8otTpwcEFn8pI" + "JIINq2p74o8Ypi3jOOzM";
 
+let currentUser = "";
+let allMyRecipes = [];
+let editingIndex = null;
+let currentImageData = "";
+let myMagicPlayer = null;
+
+// התחברות
+function login() {
+    currentUser = document.getElementById('username').value.trim();
+    let pass = prompt("הזינו סיסמה משפחתית:");
+    if (currentUser && (pass === "משפחת קולומבוס המקסימה" || pass === "מרים גליק")) {
+        document.getElementById('auth-section').style.display = 'none';
+        document.getElementById('recipe-list-screen').style.display = 'block';
+        document.getElementById('display-user').innerText = currentUser;
+        loadRecipes();
+    } else { alert("הפרטים אינם נכונים"); }
+}
+
+// ניהול תמונה
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'file-input') {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentImageData = event.target.result;
+                const preview = document.getElementById('image-preview');
+                preview.src = currentImageData;
+                preview.style.display = 'block';
+                document.getElementById('drop-text').innerText = "תמונה נבחרה בהצלחה! ✨";
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+});
+
+// טעינה מגיטהאב
+async function loadRecipes() {
+    try {
+        const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+            headers: { 'Authorization': `token ${TOKEN}` }
+        });
+        const data = await res.json();
+        const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        allMyRecipes = content.filter(r => r.user === currentUser);
+        renderList(allMyRecipes);
+    } catch (e) { console.log("שגיאה בטעינה"); }
+}
+
+function renderList(recipes) {
+    const list = document.getElementById('recipes-list');
+    list.innerHTML = recipes.map((r, i) => `
+        <div class="recipe-card" onclick="openRecipe(${i})">
+            <div class="recipe-header">
+                <h3>${r.title} 🥘</h3>
+                <span>⬅</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// פתיחת מתכון
+function openRecipe(index) {
+    const r = allMyRecipes[index];
+    document.getElementById('recipe-list-screen').style.display = 'none';
+    document.getElementById('single-recipe-screen').style.display = 'block';
+    
+    // איפוס כפתור הקראה למקרה שנשאר 🔇 ממתכון קודם
+    window.speechSynthesis.cancel();
+    document.getElementById('speak-btn').innerHTML = '🔊';
+
+    document.getElementById('full-recipe-content').innerHTML = `
+        <h1 class="elegant-title">${r.title}</h1>
+        ${r.img ? `<img src="${r.img}" style="width:100%; border-radius:15px; margin-bottom:20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">` : ''}
+        <div class="section-box"><h3>🌿 המצרכים</h3><p>${r.ing}</p></div>
+        <div class="section-box"><h3>👩‍🍳 אופן ההכנה</h3><p>${r.inst}</p></div>
+    `;
+    document.getElementById('edit-btn-placeholder').onclick = () => editRecipe(index);
+    document.getElementById('delete-btn-placeholder').onclick = () => deleteRecipe(index);
+    document.getElementById('like-count').innerText = "0";
+    window.scrollTo(0,0);
+}
+
+// הקראת מתכון מתוקנת
+function readRecipe(event) {
+    const btn = document.getElementById('speak-btn');
+    
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        btn.innerHTML = '🔊';
+        return;
+    }
+
+    const text = document.getElementById('full-recipe-content').innerText;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'he-IL';
+    utterance.rate = 0.9;
+
+    utterance.onstart = () => btn.innerHTML = '🔇';
+    utterance.onend = () => btn.innerHTML = '🔊';
+    utterance.onerror = () => btn.innerHTML = '🔊';
+
+    window.speechSynthesis.speak(utterance);
+}
+
+// לייקים
+function handleVote(type) {
+    const span = document.getElementById('like-count');
+    let count = parseInt(span.innerText);
+    span.innerText = type === 'up' ? count + 1 : count - 1;
+}
+
+// מוזיקה
+function toggleMusic(e) {
+    const btn = document.getElementById('music-btn');
+    if (!myMagicPlayer) {
+        myMagicPlayer = new Audio("song.mp3");
+        myMagicPlayer.loop = true;
+    }
+    if (myMagicPlayer.paused) {
+        myMagicPlayer.play();
+        btn.innerHTML = "🎶";
+        btn.style.background = "#D4AF37";
+    } else {
+        myMagicPlayer.pause();
+        btn.innerHTML = "🎵";
+        btn.style.background = "white";
+    }
+}
+
+// שמירה ועריכה
+async function saveRecipe() {
+    const title = document.getElementById('recipe-title').value;
+    const ing = document.getElementById('recipe-ingredients').value;
+    const inst = document.getElementById('recipe-instructions').value;
+    if(!title || !ing || !inst) return alert("נא למלא את כל השדות ✨");
+
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+        headers: { 'Authorization': `token ${TOKEN}` }
+    });
+    const fileData = await res.json();
+    let content = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+
+    const newR = { title, ing, inst, user: currentUser, img: currentImageData };
+    
+    if (editingIndex !== null) {
+        const oldR = allMyRecipes[editingIndex];
+        const idx = content.findIndex(item => item.title === oldR.title && item.user === currentUser);
+        if (idx !== -1) content[idx] = newR;
+    } else { content.push(newR); }
+
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content))));
+    await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: "Save Recipe", content: encoded, sha: fileData.sha })
+    });
+    alert("נשמר בהצלחה! 👑");
+    showListScreen();
+}
+
+function editRecipe(index) {
+    const r = allMyRecipes[index];
+    editingIndex = index;
+    document.getElementById('recipe-title').value = r.title;
+    document.getElementById('recipe-ingredients').value = r.ing;
+    document.getElementById('recipe-instructions').value = r.inst;
+    if(r.img) {
+        currentImageData = r.img;
+        document.getElementById('image-preview').src = r.img;
+        document.getElementById('image-preview').style.display = 'block';
+    }
+    document.getElementById('single-recipe-screen').style.display = 'none';
+    document.getElementById('add-recipe-screen').style.display = 'block';
+    document.querySelector('.add-edit-title').innerText = "עריכת מתכון ✨";
+}
+
+async function deleteRecipe(index) {
+    if(!confirm("למחוק? 🗑")) return;
+    const rToDelete = allMyRecipes[index];
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+        headers: { 'Authorization': `token ${TOKEN}` }
+    });
+    const fileData = await res.json();
+    let content = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+    content = content.filter(item => !(item.title === rToDelete.title && item.user === currentUser));
+    
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content))));
+    await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: "Delete", content: encoded, sha: fileData.sha })
+    });
+    showListScreen();
+}
+
+// ניווט
+function showListScreen() {
+    document.getElementById('add-recipe-screen').style.display = 'none';
+    document.getElementById('single-recipe-screen').style.display = 'none';
+    document.getElementById('recipe-list-screen').style.display = 'block';
+    loadRecipes();
+}
+
+function showAddRecipeScreen() {
+    editingIndex = null;
+    currentImageData = "";
+    document.getElementById('recipe-title').value = "";
+    document.getElementById('recipe-ingredients').value = "";
+    document.getElementById('recipe-instructions').value = "";
+    document.getElementById('image-preview').style.display = 'none';
+    document.getElementById('drop-text').innerText = "לחצו כאן להוספת תמונה";
+    document.getElementById('recipe-list-screen').style.display = 'none';
+    document.getElementById('add-recipe-screen').style.display = 'block';
+    document.querySelector('.add-edit-title').innerText = "מתכון חדש 📝";
+}
+
+function filterRecipes() {
+    const term = document.getElementById('search-input').value.toLowerCase();
+    const filtered = allMyRecipes.filter(r => r.title.toLowerCase().includes(term));
+    renderList(filtered);
+}
+</script>
 </body>
-
 </html>
-
-
-
