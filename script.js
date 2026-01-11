@@ -7,7 +7,7 @@ let currentUser = "";
 let allMyRecipes = [];
 let editingIndex = null;
 let hasLiked = false; 
-let currentImageData = ""; // משתנה לתמונה
+let currentImageData = ""; // משתנה גלובלי לאחסון התמונה
 
 // פונקציית התחברות
 let TOKEN = ""; 
@@ -20,10 +20,7 @@ function login() {
     if (!userPass) return;
     userPass = userPass.trim().replace(/\s+/g, ' ');
 
-    const pass1 = "משפחת קולומבוס המקסימה";
-    const pass2 = "מרים גליק";
-
-    if (currentUser && (userPass === pass1 || userPass === pass2)) {
+    if (currentUser && (userPass === "משפחת קולומבוס המקסימה" || userPass === "מרים גליק")) {
         TOKEN = part1 + part2; 
         document.getElementById('auth-section').style.display = 'none';
         document.getElementById('recipe-list-screen').style.display = 'block';
@@ -34,6 +31,51 @@ function login() {
         alert("הסיסמה לא תואמת. נסו שוב.");
     }
 }
+
+// פונקציה לטיפול בקובץ התמונה - גלובלית
+function handleFile(file) {
+    const preview = document.getElementById('image-preview');
+    const dropText = document.getElementById('drop-text');
+
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            currentImageData = e.target.result; // שמירת מחרוזת התמונה
+            preview.src = currentImageData;
+            preview.style.display = 'block';
+            dropText.innerText = "תמונה נבחרה בהצלחה! ✨";
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// הגדרת אירועי גרירה ברגע שהדף נטען
+document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    if (!dropZone) return;
+
+    // לחיצה על האזור פותחת בחירה
+    dropZone.onclick = () => fileInput.click();
+
+    // מניעת ברירת המחדל של הדפדפן (חשוב מאוד!)
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    dropZone.addEventListener('dragover', () => { dropZone.style.background = "#fcf8e8"; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.background = "rgba(212, 175, 55, 0.05)"; });
+
+    dropZone.addEventListener('drop', (e) => {
+        dropZone.style.background = "rgba(212, 175, 55, 0.05)";
+        const files = e.dataTransfer.files;
+        if (files.length > 0) handleFile(files[0]);
+    });
+});
 
 async function loadRecipes() {
     try {
@@ -47,9 +89,7 @@ async function loadRecipes() {
         
         allMyRecipes = content.filter(r => r.user === currentUser);
         renderRecipes(allMyRecipes);
-    } catch (e) {
-        console.error("שגיאה בטעינה:", e);
-    }
+    } catch (e) { console.error("שגיאה בטעינה:", e); }
 }
 
 function renderRecipes(recipesToDisplay) {
@@ -87,56 +127,15 @@ function openFullRecipe(index) {
 
     document.getElementById('edit-btn-placeholder').onclick = () => editRecipe(index);
     document.getElementById('delete-btn-placeholder').onclick = () => deleteRecipe(index);
-
-    hasLiked = false;
-    const likeCountSpan = document.getElementById('like-count');
-    if (likeCountSpan) likeCountSpan.innerText = "0";
-    
     window.scrollTo(0, 0);
 }
-
-// ניהול גרירת תמונה (מופעל כשהדף נטען)
-document.addEventListener('DOMContentLoaded', () => {
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    const preview = document.getElementById('image-preview');
-    const dropText = document.getElementById('drop-text');
-
-    if(!dropZone) return;
-
-    dropZone.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => handleFile(e.target.files[0]);
-
-    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.background = "#fcf8e8"; };
-    dropZone.ondragleave = () => { dropZone.style.background = "rgba(212, 175, 55, 0.05)"; };
-    dropZone.ondrop = (e) => {
-        e.preventDefault();
-        handleFile(e.dataTransfer.files[0]);
-    };
-
-    function handleFile(file) {
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                currentImageData = e.target.result;
-                preview.src = currentImageData;
-                preview.style.display = 'block';
-                dropText.innerText = "תמונה נבחרה בהצלחה! ✨";
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-});
 
 async function saveRecipe() {
     const title = document.getElementById('recipe-title').value;
     const ing = document.getElementById('recipe-ingredients').value;
     const inst = document.getElementById('recipe-instructions').value;
 
-    if (!title || !ing || !inst) {
-        alert("נא למלא את כל השדות ✨");
-        return;
-    }
+    if (!title || !ing || !inst) { alert("נא למלא את כל השדות ✨"); return; }
 
     try {
         const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
@@ -160,9 +159,7 @@ async function saveRecipe() {
         await updateGitHub(encoded, fileData.sha, "עדכון מתכון");
         alert("נשמר בהצלחה! 👑");
         showListScreen();
-    } catch (e) {
-        alert("שגיאה בשמירה");
-    }
+    } catch (e) { alert("שגיאה בשמירה"); }
 }
 
 function editRecipe(index) {
@@ -172,16 +169,14 @@ function editRecipe(index) {
     document.getElementById('recipe-ingredients').value = recipe.ing;
     document.getElementById('recipe-instructions').value = recipe.inst;
     
-    // טעינת התמונה הקיימת לעריכה
     if(recipe.img) {
         currentImageData = recipe.img;
         document.getElementById('image-preview').src = recipe.img;
         document.getElementById('image-preview').style.display = 'block';
-        document.getElementById('drop-text').innerText = "תמונה קיימת במערכת ✨";
+        document.getElementById('drop-text').innerText = "תמונה קיימת ✨";
     }
 
     showAddRecipeScreen();
-    document.querySelector('.add-edit-title').innerText = "עריכת מתכון  ✨";
 }
 
 function clearForm() {
@@ -193,24 +188,6 @@ function clearForm() {
     document.getElementById('drop-text').innerText = "גררו תמונה לכאן או לחצו לבחירה";
 }
 
-// פונקציות עזר קיימות ללא שינוי (מחיקה, סינון, מוזיקה וכו')
-async function deleteRecipe(index) {
-    if (!confirm("למחוק את המתכון? 🗑")) return;
-    const recipeToDelete = allMyRecipes[index];
-    try {
-        const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
-            headers: { 'Authorization': `token ${TOKEN}` }
-        });
-        const fileData = await response.json();
-        const decodedContent = decodeURIComponent(escape(atob(fileData.content)));
-        let content = JSON.parse(decodedContent);
-        content = content.filter(r => !(r.title === recipeToDelete.title && r.user === currentUser));
-        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content))));
-        await updateGitHub(encoded, fileData.sha, "מחיקת מתכון");
-        showListScreen();
-    } catch (e) { alert("שגיאה במחיקה"); }
-}
-
 async function updateGitHub(contentEncoded, sha, message) {
     return fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`, {
         method: 'PUT',
@@ -219,6 +196,7 @@ async function updateGitHub(contentEncoded, sha, message) {
     });
 }
 
+// פונקציות ניווט וסינון
 function showListScreen() {
     document.getElementById('add-recipe-screen').style.display = 'none';
     document.getElementById('single-recipe-screen').style.display = 'none';
@@ -231,10 +209,7 @@ function showAddRecipeScreen() {
     document.getElementById('recipe-list-screen').style.display = 'none';
     document.getElementById('single-recipe-screen').style.display = 'none';
     document.getElementById('add-recipe-screen').style.display = 'block';
-    if (editingIndex === null) {
-        document.querySelector('.add-edit-title').innerText = "הוספת מתכון חדש 📝";
-        clearForm();
-    }
+    if (editingIndex === null) clearForm();
 }
 
 function filterRecipes() {
@@ -243,37 +218,26 @@ function filterRecipes() {
     renderRecipes(filtered);
 }
 
-// כלי עזר (מוזיקה, לייקים וכו' - נשארים כפי שהיו)
+// מוזיקה וקול
 var myMagicPlayer = null; 
 async function toggleMusic(event) {
     if (event) event.stopPropagation();
-    const btn = event.currentTarget;
     const audioUrl = "song.mp3"; 
     if (!myMagicPlayer) { myMagicPlayer = new Audio(audioUrl); myMagicPlayer.loop = true; }
-    try {
-        if (myMagicPlayer.paused) { await myMagicPlayer.play(); btn.innerHTML = "🎶"; btn.style.background = "#D4AF37"; }
-        else { myMagicPlayer.pause(); btn.innerHTML = "🎵"; btn.style.background = "white"; }
-    } catch (err) { alert("שגיאה בטעינת המוזיקה"); }
+    if (myMagicPlayer.paused) { myMagicPlayer.play(); event.currentTarget.innerHTML = "🎶"; }
+    else { myMagicPlayer.pause(); event.currentTarget.innerHTML = "🎵"; }
 }
 
 function readRecipe() {
-    const btn = event.currentTarget;
-    if (window.speechSynthesis.speaking) { window.speechSynthesis.cancel(); btn.innerHTML = '🔊'; return; }
     const title = document.querySelector('#full-recipe-content h1').innerText;
     const content = document.querySelector('#full-recipe-content').innerText;
     const utterance = new SpeechSynthesisUtterance(title + ". " + content);
     utterance.lang = 'he-IL';
-    btn.innerHTML = '🔇'; 
-    utterance.onend = () => btn.innerHTML = '🔊';
     window.speechSynthesis.speak(utterance);
 }
 
 function handleVote(type) {
     const likeSpan = document.getElementById('like-count');
-    let currentCount = parseInt(likeSpan.innerText);
-    const btn = event.currentTarget;
-    if (type === 'up') { currentCount++; btn.style.transform = "scale(1.3)"; } 
-    else { currentCount--; btn.style.transform = "rotate(-20deg)"; }
-    setTimeout(() => btn.style.transform = "scale(1) rotate(0)", 200);
-    likeSpan.innerText = currentCount;
+    let count = parseInt(likeSpan.innerText);
+    likeSpan.innerText = type === 'up' ? count + 1 : count - 1;
 }
