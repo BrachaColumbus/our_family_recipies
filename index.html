@@ -52,6 +52,12 @@
             <span class="input-icon">👩‍🍳</span>
             <textarea id="recipe-instructions" rows="10" placeholder="אופן ההכנה..."></textarea>
         </div>
+        <div id="drop-zone" class="input-group" style="border: 2px dashed #D4AF37; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; margin-bottom: 15px;">
+    <span class="input-icon">📸</span>
+    <p id="drop-text">גררו תמונה לכאן או לחצו לבחירה</p>
+    <input type="file" id="file-input" accept="image/*" style="display: none;">
+    <img id="image-preview" style="max-width: 100%; max-height: 200px; display: none; margin: 10px auto; border-radius: 8px;">
+</div>
         <button onclick="saveRecipe()" class="btn-primary animate-btn">שמור מתכון בספר המשפחתי! <span class="emoji">👑</span></button>
     </div>
 
@@ -80,4 +86,5 @@
 </div>
     <script src="script.js"></script>
 </body>
+
 </html>
