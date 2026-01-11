@@ -224,44 +224,48 @@ function openFullRecipe(index) {
 
 
 
+let currentUtterance = null;
+
 function readRecipe() {
+    // שליפה בטוחה של הכפתור
+    const btn = document.querySelector('.tool-btn[onclick="readRecipe()"]') || event.currentTarget;
 
-    const btn = event.currentTarget;
-
+    // אם כבר יש הקראה פעילה - תפסיק אותה
     if (window.speechSynthesis.speaking) {
-
         window.speechSynthesis.cancel();
-
-        btn.innerHTML = '🔊'; 
-
+        if (btn) btn.innerHTML = '🔊'; 
         return;
-
     }
 
+    const titleElement = document.querySelector('#full-recipe-content h1');
+    const contentElement = document.querySelector('#full-recipe-content');
 
+    if (!titleElement || !contentElement) return;
 
-    const title = document.querySelector('#full-recipe-content h1').innerText;
-
-    const content = document.querySelector('#full-recipe-content').innerText;
-
-    const utterance = new SpeechSynthesisUtterance(title + ". " + content);
-
-    utterance.lang = 'he-IL';
-
-    utterance.rate = 0.9;
-
+    const title = titleElement.innerText;
+    const content = contentElement.innerText;
     
+    currentUtterance = new SpeechSynthesisUtterance(title + ". " + content);
+    currentUtterance.lang = 'he-IL';
+    currentUtterance.rate = 0.9;
+    
+    // שינוי האייקון ברגע שההקראה מתחילה
+    currentUtterance.onstart = () => {
+        if (btn) btn.innerHTML = '🔇';
+    };
 
-    btn.innerHTML = '🔇'; 
+    // החזרת האייקון כשההקראה מסתיימת באופן טבעי
+    currentUtterance.onend = () => {
+        if (btn) btn.innerHTML = '🔊';
+    };
 
-    utterance.onend = () => btn.innerHTML = '🔊';
+    // טיפול במקרה של שגיאה
+    currentUtterance.onerror = () => {
+        if (btn) btn.innerHTML = '🔊';
+    };
 
-    window.speechSynthesis.speak(utterance);
-
+    window.speechSynthesis.speak(currentUtterance);
 }
-
-
-
 // ניהול לייקים ודיסלייקים
 
 function handleVote(type) {
@@ -599,4 +603,5 @@ function clearForm() {
 
 
 }
+
 
