@@ -14,6 +14,15 @@
         .like-system { display: flex; align-items: center; gap: 8px; background: #fdf6e3; padding: 5px 15px; border-radius: 25px; border: 1px solid #D4AF37; }
         .search-container { margin: 15px 0; }
         #search-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #D4AF37; box-sizing: border-box; }
+        container { 
+    max-width: 600px; 
+    margin: 0 auto; 
+}
+
+/* זה מוודא שהתיבות לא יצאו מהגבולות של המלבן */
+input, textarea {
+    box-sizing: border-box;
+}
     </style>
 </head>
 <body>
@@ -305,6 +314,7 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
+
 
 
 
