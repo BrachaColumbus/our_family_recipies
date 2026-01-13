@@ -101,6 +101,9 @@
 
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    #full-recipe-content p {
+    white-space: pre-wrap; /* זה גורם לכל 'אנטר' בטקסט להפוך לירידת שורה אמיתית */
+}
     </style>
 </head>
 <body>
@@ -380,5 +383,6 @@ async function deleteRecipe(i) {
 </script>
 </body>
 </html>
+
 
 
